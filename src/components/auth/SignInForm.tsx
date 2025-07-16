@@ -6,8 +6,11 @@ import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 export default function SignInForm() {
+	const navigate = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   return (
@@ -128,7 +131,12 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button className="w-full" size="sm">
+									<Button onClick={() => {
+										localStorage.setItem('isAuthenticated', 'true');
+										navigate.push('/dashboard');
+
+										console.log("redirecting to dashboard");
+									}} className="w-full" size="sm">
                     Sign in
                   </Button>
                 </div>
