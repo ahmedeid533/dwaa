@@ -4,9 +4,6 @@ import './globals.css';
 
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
-import { useRouter, usePathname } from 'next/navigation';
-import { use, useEffect } from 'react';
-
 const outfit = Outfit({
   subsets: ["latin"],
 });
