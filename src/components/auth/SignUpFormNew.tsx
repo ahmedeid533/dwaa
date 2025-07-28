@@ -22,7 +22,8 @@ export default function SignUpForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Pharmacy'); // Default role
-  const [isChecked, setIsChecked] = useState(false);
+	const [isChecked, setIsChecked] = useState(false);
+	const [phone ,setPhone] = useState('');
 
   // Pharmacy-specific states
   const [pharmacyName, setPharmacyName] = useState('');
@@ -47,12 +48,14 @@ export default function SignUpForm() {
     address: string;
     city: string;
     license_number: string;
+    contact_phone: string;
   }
 
   interface UserMetaDataProvider extends BaseUserMetaData {
     role: 'Provider';
     provider_name: string;
     warehouse_address: string;
+    contact_phone: string;
   }
 
   type UserMetaData = UserMetaDataPharmacy | UserMetaDataProvider;
@@ -77,14 +80,16 @@ export default function SignUpForm() {
             first_name: firstName,
             last_name: lastName,
             pharmacy_name: pharmacyName,
-            address: address,
+						address: address,
+						contact_phone: phone,
             city: city,
             license_number: licenseNumber,
           }
         : {
             role: 'Provider',
             first_name: firstName,
-            last_name: lastName,
+						last_name: lastName,
+						contact_phone: phone,
             provider_name: providerName,
             warehouse_address: warehouseAddress,
           };
@@ -145,7 +150,7 @@ export default function SignUpForm() {
           <div>
             <Label htmlFor="licenseNumber">License Number<span className="text-error-500">*</span></Label>
             <Input id="licenseNumber" type="text" defaultValue={licenseNumber} onChange={(e) => setLicenseNumber(e.target.value)} placeholder="Enter license number" />
-          </div>
+					</div>
           {/* City */}
           <div>
             <Label htmlFor="city">City<span className="text-error-500">*</span></Label>
@@ -242,7 +247,12 @@ export default function SignUpForm() {
                 <div>
                   <Label htmlFor="email">Email<span className="text-error-500">*</span></Label>
                   <Input type="email" id="email" name="email" placeholder="Enter your email" defaultValue={email} onChange={(e) => setEmail(e.target.value)} />
-                </div>
+								</div>
+								{/* phone */}
+					<div>
+						<Label htmlFor="phone">Phone Number<span className="text-error-500">*</span></Label>
+						<Input id="phone" type="tel" defaultValue={phone} onChange={(e) => setPhone(e.target.value) }  placeholder="Enter phone number" />
+					</div>
 
                 {/* Password */}
                 <div>

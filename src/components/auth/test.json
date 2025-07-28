@@ -1,0 +1,107 @@
+{
+	"user": {
+		"id": "e8100e13-10a8-4c3f-ab37-66c02ac1c29e",
+		"aud": "authenticated",
+		"role": "authenticated",
+		"email": "rain.forest5023@gmail.com",
+		"email_confirmed_at": "2025-07-19T02:14:15.178939Z",
+		"phone": "",
+		"confirmed_at": "2025-07-19T02:14:15.178939Z",
+		"last_sign_in_at": "2025-07-23T15:35:00.44052977Z",
+		"app_metadata": {
+			"provider": "email",
+			"providers": ["email"]
+		},
+		"user_metadata": {
+			"email": "rain.forest5023@gmail.com",
+			"email_verified": true,
+			"first_name": "abdulrhman",
+			"last_name": "abdelwahab",
+			"phone_verified": false,
+			"provider_name": "ahmed",
+			"role": "Provider",
+			"sub": "e8100e13-10a8-4c3f-ab37-66c02ac1c29e",
+			"warehouse_address": "kafr elshiekh"
+		},
+		"identities": [{
+			"identity_id": "7b1f578a-10cb-483e-a112-110f7f12f552",
+			"id": "e8100e13-10a8-4c3f-ab37-66c02ac1c29e",
+			"user_id": "e8100e13-10a8-4c3f-ab37-66c02ac1c29e",
+			"identity_data": {
+				"email": "rain.forest5023@gmail.com",
+				"email_verified": false,
+				"first_name": "abdulrhman",
+				"last_name": "abdelwahab",
+				"phone_verified": false,
+				"provider_name": "ahmed",
+				"role": "Provider",
+				"sub": "e8100e13-10a8-4c3f-ab37-66c02ac1c29e",
+				"warehouse_address": "kafr elshiekh"
+			},
+			"provider": "email",
+			"last_sign_in_at": "2025-07-19T02:14:15.158042Z",
+			"created_at": "2025-07-19T02:14:15.158094Z",
+			"updated_at": "2025-07-19T02:14:15.158094Z",
+			"email": "rain.forest5023@gmail.com"
+		}],
+		"created_at": "2025-07-19T02:14:15.081281Z",
+		"updated_at": "2025-07-23T15:35:00.442168Z",
+		"is_anonymous": false
+	},
+	"session": {
+		"access_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6IlZLSDRDU1JCN2dMQklMRisiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2ZzZW16d3J2YmVmbnR4aHFoeWttLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJlODEwMGUxMy0xMGE4LTRjM2YtYWIzNy02NmMwMmFjMWMyOWUiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzUzMjg4NTAwLCJpYXQiOjE3NTMyODQ5MDAsImVtYWlsIjoicmFpbi5mb3Jlc3Q1MDIzQGdtYWlsLmNvbSIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWwiOiJyYWluLmZvcmVzdDUwMjNAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImZpcnN0X25hbWUiOiJhYmR1bHJobWFuIiwibGFzdF9uYW1lIjoiYWJkZWx3YWhhYiIsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwicHJvdmlkZXJfbmFtZSI6ImFobWVkIiwicm9sZSI6IlByb3ZpZGVyIiwic3ViIjoiZTgxMDBlMTMtMTBhOC00YzNmLWFiMzctNjZjMDJhYzFjMjllIiwid2FyZWhvdXNlX2FkZHJlc3MiOiJrYWZyIGVsc2hpZWtoIn0sInJvbGUiOiJhdXRoZW50aWNhdGVkIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTMyODQ5MDB9XSwic2Vzc2lvbl9pZCI6ImI4MzhhMDE2LTY0YmYtNDc5MS04NzMxLWZiYTk2NmNmY2ExZSIsImlzX2Fub255bW91cyI6ZmFsc2V9.3orL-mEaQv5dqy-YuKdPjZxaoP-_xwtekHcpiLgdAY0",
+		"token_type": "bearer",
+		"expires_in": 3600,
+		"expires_at": 1753288500,
+		"refresh_token": "ou2vbu2qdywp",
+		"user": {
+			"id": "e8100e13-10a8-4c3f-ab37-66c02ac1c29e",
+			"aud": "authenticated",
+			"role": "authenticated",
+			"email": "rain.forest5023@gmail.com",
+			"email_confirmed_at": "2025-07-19T02:14:15.178939Z",
+			"phone": "",
+			"confirmed_at": "2025-07-19T02:14:15.178939Z",
+			"last_sign_in_at": "2025-07-23T15:35:00.44052977Z",
+			"app_metadata": {
+				"provider": "email",
+				"providers": ["email"]
+			},
+			"user_metadata": {
+				"email": "rain.forest5023@gmail.com",
+				"email_verified": true,
+				"first_name": "abdulrhman",
+				"last_name": "abdelwahab",
+				"phone_verified": false,
+				"provider_name": "ahmed",
+				"role": "Provider",
+				"sub": "e8100e13-10a8-4c3f-ab37-66c02ac1c29e",
+				"warehouse_address": "kafr elshiekh"
+			},
+			"identities": [{
+				"identity_id": "7b1f578a-10cb-483e-a112-110f7f12f552",
+				"id": "e8100e13-10a8-4c3f-ab37-66c02ac1c29e",
+				"user_id": "e8100e13-10a8-4c3f-ab37-66c02ac1c29e",
+				"identity_data": {
+					"email": "rain.forest5023@gmail.com",
+					"email_verified": false,
+					"first_name": "abdulrhman",
+					"last_name": "abdelwahab",
+					"phone_verified": false,
+					"provider_name": "ahmed",
+					"role": "Provider",
+					"sub": "e8100e13-10a8-4c3f-ab37-66c02ac1c29e",
+					"warehouse_address": "kafr elshiekh"
+				},
+				"provider": "email",
+				"last_sign_in_at": "2025-07-19T02:14:15.158042Z",
+				"created_at": "2025-07-19T02:14:15.158094Z",
+				"updated_at": "2025-07-19T02:14:15.158094Z",
+				"email": "rain.forest5023@gmail.com"
+			}],
+			"created_at": "2025-07-19T02:14:15.081281Z",
+			"updated_at": "2025-07-23T15:35:00.442168Z",
+			"is_anonymous": false
+		}
+	}
+}
