@@ -1,4 +1,5 @@
-"use client";
+'use client';
+
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -125,69 +126,75 @@ const AppSidebar: React.FC = () => {
     if (!matched) setOpenSubmenu(null);
   }, [pathname, isActive, profile]);
 
-  const renderMenuItems = (navItems: NavItem[]) => (
-    <ul className="flex flex-col gap-4">
-      {navItems.map((nav, index) => (
-        <li key={nav.name}>
-          {nav.subItems ? (
-            <button
-              onClick={() => handleSubmenuToggle(index, "main")}
-              className={`menu-item group w-full ${openSubmenu?.index === index ? "menu-item-active" : "menu-item-inactive"} ${!isExpanded && !isHovered ? "lg:justify-center" : "lg:justify-start"}`}
-            >
-              <span className={`${openSubmenu?.index === index ? "menu-item-icon-active" : "menu-item-icon-inactive"}`}>{nav.icon}</span>
-              {(isExpanded || isHovered || isMobileOpen) && <span className="menu-item-text">{nav.name}</span>}
-              {(isExpanded || isHovered || isMobileOpen) && <ChevronDownIcon className={`ml-auto w-5 h-5 transition-transform duration-200 ${openSubmenu?.index === index ? "rotate-180 text-brand-500" : ""}`} />}
-            </button>
-          ) : (
-            nav.path && (
-              <Link href={nav.path} className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"}`}>
-                <span className={`${isActive(nav.path) ? "menu-item-icon-active" : "menu-item-icon-inactive"}`}>{nav.icon}</span>
-                {(isExpanded || isHovered || isMobileOpen) && <span className="menu-item-text">{nav.name}</span>}
-              </Link>
-            )
-          )}
-          {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
-            <div
-              ref={(el) => { subMenuRefs.current[`main-${index}`] = el; }}
-              className="overflow-hidden transition-all duration-300"
-              style={{ height: openSubmenu?.index === index ? `${subMenuHeight[`main-${index}`]}px` : "0px" }}
-            >
-              <ul className="mt-2 space-y-1 ml-9">
-                {nav.subItems.map((subItem) => (
-                  <li key={subItem.name}>
-                    <Link href={subItem.path} className={`menu-dropdown-item ${isActive(subItem.path) ? "menu-dropdown-item-active" : "menu-dropdown-item-inactive"}`}>
-                      {subItem.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
+  const renderMenuItems = (navItems: NavItem[]) => {
+    // Define shared menu item classes for consistency
+    const baseMenuItem = "flex items-center gap-3 p-3 rounded-lg transition-colors duration-200";
+    const inactiveMenuItem = "text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white";
+    const activeMenuItem = "bg-[#08d9b3]/10 text-[#08d9b3] font-semibold";
+
+    return (
+        <ul className="flex flex-col gap-2">
+            {navItems.map((nav, index) => (
+                <li key={nav.name}>
+                    {nav.subItems ? (
+                        <button
+                            onClick={() => handleSubmenuToggle(index, "main")}
+                            className={`w-full ${baseMenuItem} ${openSubmenu?.index === index ? activeMenuItem : inactiveMenuItem}`}
+                        >
+                            <span className="w-6 h-6">{nav.icon}</span>
+                            {(isExpanded || isHovered || isMobileOpen) && <span className="flex-grow text-left">{nav.name}</span>}
+                            {(isExpanded || isHovered || isMobileOpen) && <ChevronDownIcon className={`ml-auto w-5 h-5 transition-transform duration-200 ${openSubmenu?.index === index ? "rotate-180" : ""}`} />}
+                        </button>
+                    ) : (
+                        nav.path && (
+                            <Link href={nav.path} className={`${baseMenuItem} ${isActive(nav.path) ? activeMenuItem : inactiveMenuItem}`}>
+                                <span className="w-6 h-6">{nav.icon}</span>
+                                {(isExpanded || isHovered || isMobileOpen) && <span>{nav.name}</span>}
+                            </Link>
+                        )
+                    )}
+                    {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
+                        <div
+                            ref={(el) => { subMenuRefs.current[`main-${index}`] = el; }}
+                            className="overflow-hidden transition-all duration-300"
+                            style={{ height: openSubmenu?.type === 'main' && openSubmenu.index === index ? `${subMenuHeight[`main-${index}`]}px` : "0px" }}
+                        >
+                            <ul className="mt-2 space-y-1 pl-9">
+                                {nav.subItems.map((subItem) => (
+                                    <li key={subItem.name}>
+                                        <Link href={subItem.path} className={`block px-4 py-2 text-sm rounded-md transition-colors ${isActive(subItem.path) ? "text-[#08d9b3] font-medium" : "text-gray-500 hover:text-[#08d9b3] dark:text-gray-400 dark:hover:text-[#08d9b3]"}`}>
+                                            {subItem.name}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </li>
+            ))}
+        </ul>
+    );
+};
   
   const renderSidebarContent = () => {
-    if (loading) return <div className="p-4 text-gray-400">Loading...</div>;
+    if (loading) return <div className="p-4 text-center text-gray-400">Loading...</div>;
 
-    if (profile?.role === 'Admin') {
+    switch (profile?.role) {
+      case 'Admin':
         return renderMenuItems(adminNavItems);
-    }
-    if (profile?.role === 'Pharmacy') {
+      case 'Pharmacy':
         return renderMenuItems(pharmacyNavItems);
-    }
-    if (profile?.role === 'Provider') {
+      case 'Provider':
         return renderMenuItems(providerNavItems);
+      default:
+        // You might want a fallback for users who are logged in but have no role
+        return <div className="p-4 text-center text-gray-400">No navigation items available.</div>;
     }
-
-    // Return null or an empty fragment if not logged in or role not matched
-    return null;
   };
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 ${isExpanded || isMobileOpen ? "w-[290px]" : isHovered ? "w-[290px]" : "w-[90px]"} ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-4 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 ${isExpanded || isMobileOpen ? "w-[290px]" : isHovered ? "w-[290px]" : "w-[90px]"} ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -196,10 +203,10 @@ const AppSidebar: React.FC = () => {
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               <Image className="dark:hidden" src="/images/logo/logo.svg" alt="Logo" width={150} height={40} onError={(e) => e.currentTarget.src = 'https://placehold.co/150x40/000000/FFFFFF?text=Logo'} />
-              <Image className="hidden dark:block" src="/images/logo/logo-dark.svg" alt="Logo" width={150} height={40} onError={(e) => e.currentTarget.src = 'https://placehold.co/150x40/FFFFFF/000000?text=Logo'}/>
+              <Image className="hidden dark:block" src="/images/logo/logo.svg" alt="Logo" width={150} height={40} onError={(e) => e.currentTarget.src = 'https://placehold.co/150x40/FFFFFF/000000?text=Logo'}/>
             </>
           ) : (
-            <Image src="/images/logo/logo-icon.svg" alt="Logo" width={32} height={32} onError={(e) => e.currentTarget.src = 'https://placehold.co/32x32/000000/FFFFFF?text=L'}/>
+            <Image src="/images/logo/auth-logo.svg" alt="Logo" width={32} height={32} onError={(e) => e.currentTarget.src = 'https://placehold.co/32x32/000000/FFFFFF?text=L'}/>
           )}
         </Link>
       </div>

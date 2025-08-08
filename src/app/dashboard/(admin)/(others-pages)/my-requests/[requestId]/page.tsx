@@ -118,70 +118,73 @@ export default function ViewDealsPage() {
     }
   };
 
-  if (authLoading || isLoading) return <div className="p-8 text-center">Loading...</div>;
+  if (authLoading || isLoading) return <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading...</div>;
   if (error && !deals.length) return <div className="p-8 text-center text-red-500"><h1>Error</h1><p>{error}</p></div>;
   if (!user || profile?.role !== 'Pharmacy') return <div className="p-8 text-center text-red-500"><h1>Access Denied</h1></div>;
 
   const remainingQuantity = requestDetails ? requestDetails.quantity - requestDetails.quantity_fulfilled : 0;
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-gray-800 dark:text-white">
-        Deals for: {requestDetails?.medicine_name}
-      </h1>
-      <p className="text-gray-500 dark:text-gray-400 mb-6">You need <span className="font-bold">{remainingQuantity}</span> more units.</p>
-      
-      {message && <div className="mb-4 p-4 text-center bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg">{message}</div>}
-      {error && !message && <div className="mb-4 p-4 text-center bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-lg">{error}</div>}
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen p-4 sm:p-8">
+        <div className="max-w-7xl mx-auto">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-gray-800 dark:text-white">
+                Deals for: {requestDetails?.medicine_name}
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">You need <span className="font-bold text-[#08d9b3]">{remainingQuantity}</span> more units.</p>
+            
+            {message && <div className="mb-4 p-4 text-center bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 rounded-lg">{message}</div>}
+            {error && !message && <div className="mb-4 p-4 text-center bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300 rounded-lg">{error}</div>}
 
-      {deals.length === 0 && !isLoading ? (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold">No Deals Yet</h2>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {deals.map(deal => (
-            <div key={deal.deal_id} className={`p-4 rounded-lg shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-opacity ${deal.status !== 'Pending' ? 'opacity-50 bg-gray-100 dark:bg-gray-900' : 'bg-white dark:bg-gray-800'}`}>
-              <div>
-                <div className="flex items-center gap-4 mb-1">
-                    <p className="font-semibold text-lg text-gray-800 dark:text-white">
-                        {/* [FIXED] Access the first element of the profiles array */}
-                        From: {deal.profiles?.[0]?.provider_name || 'A Provider'}
-                    </p>
-                    <div className="flex items-center gap-1 text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
-                        <StarIcon className="w-4 h-4 text-yellow-400" />
-                        <span className="font-bold text-gray-700 dark:text-gray-200">
-                             {/* [FIXED] Access the first element of the profiles array */}
-                            {deal.profiles?.[0]?.average_rating?.toFixed(1) || 'New'}
-                        </span>
-                    </div>
+            {deals.length === 0 && !isLoading ? (
+                <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-white">No Deals Yet</h2>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2">Providers have not made any offers on this request.</p>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Offering <span className="font-bold">{deal.quantity_offered}</span> units at 
-                    <span className="font-bold text-green-600 dark:text-green-400"> ${deal.price_per_unit.toFixed(2)}</span> each.
-                </p>
-                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Total: <span className="font-semibold">${(deal.quantity_offered * deal.price_per_unit).toFixed(2)}</span>
-                </p>
-              </div>
-              <div className="w-full sm:w-auto">
-                {deal.status === 'Pending' ? (
-                    <button 
-                      onClick={() => handleAcceptDeal(deal.deal_id)}
-                      disabled={isAccepting !== null}
-                      className="w-full bg-green-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
-                      {isAccepting === deal.deal_id ? 'Accepting...' : 'Accept Deal'}
-                    </button>
-                ) : (
-                    <span className={`font-bold py-2 px-6 rounded-lg ${deal.status === 'Accepted' ? 'text-green-500 bg-green-100 dark:bg-green-900' : 'text-red-500 bg-red-100 dark:bg-red-900'}`}>
-                        {deal.status}
-                    </span>
-                )}
-              </div>
-            </div>
-          ))}
+            ) : (
+                <div className="space-y-4">
+                    {deals.map(deal => (
+                        <div key={deal.deal_id} className={`p-4 rounded-xl shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all duration-300 ${deal.status !== 'Pending' ? 'opacity-60 bg-gray-100 dark:bg-gray-800/50' : 'bg-white dark:bg-gray-800 hover:shadow-lg'}`}>
+                            <div className="flex-grow">
+                                <div className="flex items-center gap-4 mb-1">
+                                    <p className="font-semibold text-lg text-gray-800 dark:text-white">
+                                        {/* [FIXED] Access the first element of the profiles array */}
+                                        From: {deal.profiles?.[0]?.provider_name || 'A Provider'}
+                                    </p>
+                                    <div className="flex items-center gap-1 text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
+                                        <StarIcon className="w-4 h-4 text-yellow-400" />
+                                        <span className="font-bold text-gray-700 dark:text-gray-200">
+                                            {/* [FIXED] Access the first element of the profiles array */}
+                                            {deal.profiles?.[0]?.average_rating?.toFixed(1) || 'New'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                    Offering <span className="font-bold">{deal.quantity_offered}</span> units at 
+                                    <span className="font-bold text-green-600 dark:text-green-400"> ${deal.price_per_unit.toFixed(2)}</span> each.
+                                </p>
+                                 <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    Total: <span className="font-semibold">${(deal.quantity_offered * deal.price_per_unit).toFixed(2)}</span>
+                                </p>
+                            </div>
+                            <div className="w-full sm:w-auto flex-shrink-0">
+                                {deal.status === 'Pending' ? (
+                                    <button 
+                                        onClick={() => handleAcceptDeal(deal.deal_id)}
+                                        disabled={isAccepting !== null}
+                                        className="w-full bg-[#08d9b3] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#07c0a0] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+                                        {isAccepting === deal.deal_id ? 'Accepting...' : 'Accept Deal'}
+                                    </button>
+                                ) : (
+                                    <span className={`font-bold py-2 px-6 rounded-lg text-sm ${deal.status === 'Accepted' ? 'text-green-700 bg-green-100 dark:bg-green-900/50 dark:text-green-300' : 'text-red-700 bg-red-100 dark:bg-red-900/50 dark:text-red-300'}`}>
+                                        {deal.status}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
-      )}
     </div>
   );
 }

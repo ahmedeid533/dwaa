@@ -29,7 +29,13 @@ export default function RootLayout({
   }, []);
 
   return (
-    <html lang="en">
+		<html lang="en">
+			<head>
+				<meta charSet="UTF-8" />
+				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+				<title>dawaalink Dashboard</title>
+				<link rel="icon" href="/images/favicon.ico.svg" />
+			</head>
 			<body className={`${outfit.className} dark:bg-gray-900`}>
 				<LanguageProvider>
 				<AuthProvider>

@@ -1,261 +1,236 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/utils/supabase/client';
-import { useParams } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/context/AuthContext'; // Assuming you have an AuthContext
+import { supabase } from '@/utils/supabase/client'; // Your Supabase client
 
-// Define a type for the review data
-type Review = {
-    rating: number;
-    comment: string | null;
+// --- Helper Components & Icons ---
+
+// A simple icon component for demonstration. Replace with your icon library (e.g., Lucide, Heroicons).
+const Icon = ({ name, className, fill = "none" }: { name: string, className?: string, fill?: string }) => {
+    const icons: { [key: string]: JSX.Element } = {
+        user: <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />,
+        phone: <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 6.75z" />,
+        mapPin: (
+            <>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+            </>
+        ),
+        shieldCheck: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286zm0 13.036h.008v.008h-.008v-.008z" />,
+        star: <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-3.152a.563.563 0 00-.652 0l-4.725 3.152a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />,
+    };
+    return <svg xmlns="http://www.w3.org/2000/svg" fill={fill} viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"}>{icons[name]}</svg>;
 };
 
-// [FIXED] Define a type for the detailed Order data, ensuring nested relations are arrays.
-type OrderDetails = {
-  order_id: number;
-  order_date: string;
-  order_status: string;
-  total_amount: number;
-  pharmacy_user_id: string;
-  medicine_requests: {
-    medicine_name: string;
-  }[] | null; // Supabase returns this as an array
-  order_items: {
-    quantity_fulfilled: number;
-    deals: {
-      price_per_unit: number;
-      provider_user_id: string;
-      profiles: {
-        provider_name: string;
-      }[] | null; // Profiles is also a nested array
-    }[] | null; // Deals is also a nested array
-  }[];
-  reviews: Review[] // Check for existing reviews
-};
-
-
-// Star rating component
-const StarRating = ({ rating, setRating }: { rating: number, setRating: (r: number) => void }) => {
+// Star rating display component
+const StarRatingDisplay = ({ rating }: { rating: number }) => {
+    const totalStars = 5;
     return (
         <div className="flex items-center">
-            {[1, 2, 3, 4, 5].map((star) => (
-                <svg
-                    key={star}
-                    onClick={() => setRating(star)}
-                    className={`w-8 h-8 cursor-pointer ${rating >= star ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.368-2.448a1 1 0 00-1.175 0l-3.368 2.448c-.784.57-1.838-.197-1.54-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.07 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
-                </svg>
+            {[...Array(totalStars)].map((_, index) => (
+                // [FIXED] Pass fill="currentColor" to ensure the star shape is filled, not just outlined.
+                <Icon key={index} name="star" fill="currentColor" className={`w-5 h-5 ${index < Math.round(rating) ? 'text-yellow-400' : 'text-gray-300'}`} />
             ))}
         </div>
     );
 };
 
+// Profile status badge component
+const StatusBadge = ({ status }: { status: string }) => {
+    const statusStyles: { [key: string]: string } = {
+        under_review: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
+        approved: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+        rejected: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
+    };
+    return (
+        <span className={`px-3 py-1 text-xs font-medium rounded-full ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}>
+            {status.replace('_', ' ').toUpperCase()}
+        </span>
+    );
+};
 
-export default function OrderDetailsPage() {
-  const { user, profile } = useAuth();
-  const params = useParams();
-  const orderId = params.orderId as string;
 
-  const [order, setOrder] = useState<OrderDetails | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+// --- Main Profile Page Component ---
 
-  // State for the review form
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
-  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+export default function ProfilePage() {
+    const { user } = useAuth();
+    const [profile, setProfile] = useState<any>(null);
+    const [formData, setFormData] = useState<any>({});
+    const [isEditing, setIsEditing] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    if (user && profile?.role === 'Pharmacy' && orderId) {
-      const fetchOrderDetails = async () => {
+    const fetchProfile = useCallback(async () => {
+        if (!user) return;
         setIsLoading(true);
-        const { data, error: fetchError } = await supabase
-          .from('orders')
-          .select(`
-            order_id, order_date, order_status, total_amount, pharmacy_user_id,
-            medicine_requests (medicine_name),
-            order_items (
-              quantity_fulfilled,
-              deals (
-                price_per_unit, provider_user_id,
-                profiles (provider_name)
-              )
-            ),
-            reviews (*)
-          `)
-          .eq('order_id', orderId)
-          .single();
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
 
-        if (fetchError || !data || data.pharmacy_user_id !== user.id) {
-          setError('Could not find this order or you do not have permission to view it.');
+        if (error) {
+            setError('Failed to fetch profile data.');
+            console.error(error);
         } else {
-          // The fetched data structure now matches the updated `OrderDetails` type.
-          setOrder(data as OrderDetails);
+            setProfile(data);
+            setFormData(data); // Initialize form data
         }
         setIsLoading(false);
-      };
-      fetchOrderDetails();
+    }, [user]);
+
+    useEffect(() => {
+        fetchProfile();
+    }, [fetchProfile]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    const handleSave = async () => {
+        if (!user) return;
+        setIsSaving(true);
+        setError(null);
+
+        const { id, role, average_rating, status, created_at, ...updateData } = formData;
+
+        const { error: updateError } = await supabase
+            .from('profiles')
+            .update(updateData)
+            .eq('id', user.id);
+
+        if (updateError) {
+            setError('Failed to update profile. Please try again.');
+            console.error(updateError);
+        } else {
+            await fetchProfile(); // Re-fetch to get the latest data
+            setIsEditing(false);
+        }
+        setIsSaving(false);
+    };
+
+    const handleCancel = () => {
+        setFormData(profile); // Reset form data to original profile
+        setIsEditing(false);
+    };
+
+    if (isLoading) {
+        return <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading profile...</div>;
     }
-  }, [user, profile, orderId]);
 
-  const handleUpdateStatus = async (newStatus: string) => {
-    if (!order) return;
-    // NOTE: Using a modal for errors is better than `alert()` in a real app.
-    const { error: updateError } = await supabase
-      .from('orders').update({ order_status: newStatus }).eq('order_id', order.order_id);
-    if (updateError) {
-        setError(`Error updating status: ${updateError.message}`);
-    } else {
-        setOrder({ ...order, order_status: newStatus });
-    }
-  };
-
-  const handleReviewSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (rating === 0 || !order || !user) {
-        setError("Please select a rating.");
-        return;
-    }
-    
-    // [FIXED] Access the nested providerId correctly from the arrays.
-    const providerId = order.order_items[0]?.deals?.[0]?.provider_user_id;
-    if (!providerId) {
-        setError("Could not find provider for this order.");
-        return;
+    if (error) {
+        return <div className="p-8 text-center text-red-500"><h1>Error</h1><p>{error}</p></div>;
     }
 
-    setIsSubmittingReview(true);
-    const { data, error: reviewError } = await supabase
-      .from('reviews')
-      .insert([{
-          order_id: order.order_id,
-          reviewer_user_id: user.id,
-          reviewed_user_id: providerId,
-          rating: rating,
-          comment: comment
-      }])
-      .select()
-      .single();
-    
-    if (reviewError) {
-        setError(`Error submitting review: ${reviewError.message}`);
-    } else if (data) {
-        // Update local state to show the new review instantly
-        setOrder({ ...order, reviews: [...order.reviews, data as Review] });
+    if (!profile) {
+        return <div className="p-8 text-center text-gray-500 dark:text-gray-400">Profile not found.</div>;
     }
-    setIsSubmittingReview(false);
-  };
 
-  if (isLoading) return <div className="p-8 text-center">Loading order details...</div>;
-  if (error) return <div className="p-8 text-center text-red-500"><h1>Error</h1><p>{error}</p></div>;
-  if (!order) return <div className="p-8 text-center">Order not found.</div>
-
-  // [FIXED] Safely access nested data from arrays.
-  const orderItem = order.order_items?.[0];
-  const deal = orderItem?.deals?.[0];
-  const provider = deal?.profiles?.[0];
-  const existingReview = order.reviews?.[0];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-        case 'Pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-        case 'Shipped': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-        case 'Delivered': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-        case 'Completed': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
-        case 'Cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-        default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-    }
-  };
-
-  return (
-    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+    const renderField = (name: string, label: string, icon: string) => (
         <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
-                Order #{order.order_id}
-            </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-                Placed on: {new Date(order.order_date).toLocaleDateString()}
-            </p>
-        </div>
-        <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(order.order_status)}`}>
-            {order.order_status}
-        </span>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 space-y-6">
-        {/* Order Summary and Provider Info */}
-        <div>
-            <h2 className="text-lg font-semibold mb-2">Order Summary</h2>
-            <div className="border-t dark:border-gray-700 pt-4">
-                <div className="flex justify-between items-center">
-                    {/* [FIXED] Access medicine_name from the first item in the array */}
-                    <p className="font-bold text-lg">{order.medicine_requests?.[0]?.medicine_name}</p>
-                    <p className="font-bold text-lg">${order.total_amount.toFixed(2)}</p>
+            <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">{label}</label>
+            {isEditing ? (
+                <input
+                    type="text"
+                    name={name}
+                    value={formData[name] || ''}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#08d9b3] focus:border-[#08d9b3] sm:text-sm"
+                />
+            ) : (
+                <div className="flex items-center mt-1">
+                    <Icon name={icon} className="h-5 w-5 text-gray-400 mr-2" />
+                    <p className="text-gray-800 dark:text-gray-200">{profile[name] || 'Not provided'}</p>
                 </div>
-                {orderItem && deal && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Quantity: {orderItem.quantity_fulfilled} x ${deal.price_per_unit.toFixed(2)}
-                    </p>
-                )}
+            )}
+        </div>
+    );
+
+    return (
+        <div className="bg-gray-50 dark:bg-gray-900 min-h-screen p-4 sm:p-8">
+            <div className="max-w-4xl mx-auto">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    {/* --- Profile Header --- */}
+                    <div className="p-6 sm:p-8 bg-[#08d9b3]">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                            <div>
+                                <h1 className="text-2xl sm:text-3xl font-bold text-white">
+                                    {profile.role === 'Pharmacy' ? profile.pharmacy_name : profile.provider_name}
+                                </h1>
+                                <p className="text-sm text-cyan-100 mt-1">{profile.role}</p>
+                            </div>
+                            {!isEditing && (
+                                <button
+                                    onClick={() => setIsEditing(true)}
+                                    className="mt-4 sm:mt-0 bg-white/20 text-white font-semibold py-2 px-4 rounded-lg hover:bg-white/30 transition-colors backdrop-blur-sm"
+                                >
+                                    Edit Profile
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* --- Profile Body --- */}
+                    <div className="p-6 sm:p-8">
+                        {/* --- Status and Rating --- */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
+                            <div>
+                                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Profile Status</h3>
+                                <div className="mt-2">
+                                    <StatusBadge status={profile.status} />
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Average Rating</h3>
+                                <div className="mt-2 flex items-center gap-2">
+                                    <StarRatingDisplay rating={profile.average_rating} />
+                                    <span className="font-semibold text-gray-700 dark:text-gray-200">{Number(profile.average_rating).toFixed(1)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* --- Profile Details --- */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {renderField('contact_phone', 'Contact Phone', 'phone')}
+                            
+                            {/* Conditional fields based on role */}
+                            {profile.role === 'Pharmacy' ? (
+                                <>
+                                    {renderField('address', 'Pharmacy Address', 'mapPin')}
+                                    {renderField('city', 'City', 'mapPin')}
+                                    {renderField('license_number', 'License Number', 'shieldCheck')}
+                                </>
+                            ) : (
+                                <>
+                                    {renderField('warehouse_address', 'Warehouse Address', 'mapPin')}
+                                </>
+                            )}
+                        </div>
+
+                        {/* --- Edit Mode Actions --- */}
+                        {isEditing && (
+                            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-4">
+                                <button
+                                    onClick={handleCancel}
+                                    className="bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSave}
+                                    disabled={isSaving}
+                                    className="bg-[#08d9b3] text-white font-semibold py-2 px-4 rounded-lg hover:bg-[#07c0a0] disabled:bg-[#08d9b3]/50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    {isSaving ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
-        <div>
-            <h2 className="text-lg font-semibold mb-2">Provider Information</h2>
-            <div className="border-t dark:border-gray-700 pt-4">
-                {/* [FIXED] Access provider_name from the nested array structure */}
-                <p className="font-medium">{provider?.provider_name || 'N/A'}</p>
-            </div>
-        </div>
-
-        {/* Actions Section */}
-        <div className="border-t dark:border-gray-700 pt-4">
-            <h2 className="text-lg font-semibold mb-2">Actions</h2>
-            {order.order_status === 'Delivered' && (
-                <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">If you have received this order, please mark it as complete.</p>
-                    <button onClick={() => handleUpdateStatus('Completed')} className="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700">
-                        Mark as Completed
-                    </button>
-                </div>
-            )}
-
-            {order.order_status === 'Completed' && !existingReview && (
-                <form onSubmit={handleReviewSubmit}>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Thank you for your order! Please rate your experience with the provider.</p>
-                    <div className="mb-4">
-                        <StarRating rating={rating} setRating={setRating} />
-                    </div>
-                    <textarea
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                        placeholder="Leave a comment (optional)..."
-                        rows={3}
-                        className="w-full p-2 bg-gray-100 dark:bg-gray-700 border rounded-md"
-                    />
-                    <button type="submit" disabled={isSubmittingReview} className="mt-2 bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-cyan-700 disabled:bg-gray-400">
-                        {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
-                    </button>
-                </form>
-            )}
-
-            {existingReview && (
-                <div>
-                    <h3 className="font-semibold">Your Review</h3>
-                    <div className="flex items-center mt-1">
-                        <StarRating rating={existingReview.rating} setRating={() => {}} />
-                    </div>
-                    {existingReview.comment && <p className="mt-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-md text-sm">{existingReview.comment}</p>}
-                </div>
-            )}
-        </div>
-      </div>
-    </div>
-  );
+    );
 }
-

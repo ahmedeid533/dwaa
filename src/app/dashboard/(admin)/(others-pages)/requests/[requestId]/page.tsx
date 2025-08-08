@@ -73,27 +73,27 @@ export default function MakeDealPage() {
     setError(null);
     setMessage(null);
 
-		try {
-			const { error: insertError } = await supabase.from('deals').insert([{
-			request_id: request.request_id,
-			provider_user_id: user.id,
-			price_per_unit: parseFloat(pricePerUnit),
-			quantity_offered: parseInt(quantityOffered, 10),
-			}]);
+    try {
+      const { error: insertError } = await supabase.from('deals').insert([{
+      request_id: request.request_id,
+      provider_user_id: user.id,
+      price_per_unit: parseFloat(pricePerUnit),
+      quantity_offered: parseInt(quantityOffered, 10),
+      }]);
 
-			if (insertError) {
-			setError(`Failed to submit deal: ${insertError.message}`);
-			} else {
-			setMessage('Your deal has been submitted successfully!');
-			setTimeout(() => router.push('/dashboard/requests'), 2000);
-			}
-		} finally {
-			setIsSubmitting(false);
-		}
+      if (insertError) {
+      setError(`Failed to submit deal: ${insertError.message}`);
+      } else {
+      setMessage('Your deal has been submitted successfully!');
+      setTimeout(() => router.push('/dashboard/requests'), 2000);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (authLoading || isLoading) {
-    return <div className="p-8 text-center">Loading...</div>;
+    return <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading...</div>;
   }
   
   if (!user || profile?.role !== 'Provider') {
@@ -107,67 +107,69 @@ export default function MakeDealPage() {
   const remainingQuantity = request ? request.quantity - request.quantity_fulfilled : 0;
 
   return (
-    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-gray-800 dark:text-white">
-        Make a Deal
-      </h1>
-      <p className="text-gray-500 dark:text-gray-400 mb-6">Submit your offer for the request below.</p>
-      
-      {/* Request Details Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 border border-gray-200 dark:border-gray-700">
-        <div className="flex justify-between items-start">
-            <h2 className="text-xl font-bold text-gray-800 dark:text-white">{request?.medicine_name}</h2>
-            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
-                Remaining Qty: {remainingQuantity}
-            </span>
-        </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          From: <span className="font-semibold">{request?.profiles?.pharmacy_name || 'A Pharmacy'}</span>
-        </p>
-        {request?.notes && <p className="mt-4 text-sm bg-gray-50 dark:bg-gray-700 p-3 rounded-md">{request.notes}</p>}
-      </div>
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen p-4 sm:p-8">
+        <div className="max-w-4xl mx-auto">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-gray-800 dark:text-white">
+                Make a Deal
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">Submit your offer for the request below.</p>
+            
+            {/* Request Details Card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8 border border-gray-200 dark:border-gray-700">
+                <div className="flex justify-between items-start">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">{request?.medicine_name}</h2>
+                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-1 rounded-full dark:bg-blue-900/50 dark:text-blue-300 whitespace-nowrap">
+                        Remaining Qty: {remainingQuantity}
+                    </span>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    From: <span className="font-semibold text-gray-700 dark:text-gray-300">{request?.profiles?.pharmacy_name || 'A Pharmacy'}</span>
+                </p>
+                {request?.notes && <p className="mt-4 text-sm bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md text-gray-600 dark:text-gray-300">{request.notes}</p>}
+            </div>
 
-      {/* Deal Submission Form */}
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <div>
-            <label htmlFor="quantityOffered" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Quantity You Can Provide
-            </label>
-            <input
-              id="quantityOffered"
-              type="number"
-              value={quantityOffered}
-              onChange={(e) => setQuantityOffered(e.target.value)}
-              required
-              min="1"
-              max={remainingQuantity} // Can't offer more than what's remaining
-              className="w-full p-3 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
-            />
+            {/* Deal Submission Form */}
+            <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                <div>
+                    <label htmlFor="quantityOffered" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Quantity You Can Provide
+                    </label>
+                    <input
+                        id="quantityOffered"
+                        type="number"
+                        value={quantityOffered}
+                        onChange={(e) => setQuantityOffered(e.target.value)}
+                        required
+                        min="1"
+                        max={remainingQuantity} // Can't offer more than what's remaining
+                        className="w-full p-3 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#08d9b3] focus:border-[#08d9b3] transition"
+                    />
+                </div>
+                <div>
+                    <label htmlFor="pricePerUnit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Price Per Unit ($)
+                    </label>
+                    <input
+                        id="pricePerUnit"
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        value={pricePerUnit}
+                        onChange={(e) => setPricePerUnit(e.target.value)}
+                        required
+                        placeholder="e.g., 12.50"
+                        className="w-full p-3 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#08d9b3] focus:border-[#08d9b3] transition"
+                    />
+                </div>
+                <div>
+                    <button type="submit" disabled={isSubmitting} className="w-full p-3 font-semibold text-white bg-[#08d9b3] rounded-lg hover:bg-[#07c0a0] disabled:bg-gray-500 transition-colors">
+                        {isSubmitting ? 'Submitting Deal...' : 'Submit Deal'}
+                    </button>
+                </div>
+                {message && <p className="mt-4 p-3 text-sm text-center text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-900/50 rounded-lg">{message}</p>}
+                {error && <p className="mt-4 p-3 text-sm text-center text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/50 rounded-lg">{error}</p>}
+            </form>
         </div>
-        <div>
-            <label htmlFor="pricePerUnit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Price Per Unit ($)
-            </label>
-            <input
-              id="pricePerUnit"
-              type="number"
-              step="0.01"
-              min="0.01"
-              value={pricePerUnit}
-              onChange={(e) => setPricePerUnit(e.target.value)}
-              required
-              placeholder="e.g., 12.50"
-              className="w-full p-3 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
-            />
-        </div>
-        <div>
-            <button type="submit" disabled={isSubmitting} className="w-full p-3 font-semibold text-white bg-cyan-600 rounded-lg hover:bg-cyan-700 disabled:bg-gray-500">
-              {isSubmitting ? 'Submitting Deal...' : 'Submit Deal'}
-            </button>
-        </div>
-        {message && <p className="text-sm text-center text-green-500">{message}</p>}
-        {error && <p className="text-sm text-center text-red-500">{error}</p>}
-      </form>
     </div>
   );
 }

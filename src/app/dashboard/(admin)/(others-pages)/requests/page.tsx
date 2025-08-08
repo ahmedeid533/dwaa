@@ -76,75 +76,76 @@ export default function ViewRequestsPage() {
   }, [user, profile]);
 
   if (authLoading) {
-    return <div className="p-8 text-center">Loading user data...</div>;
+    return <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading user data...</div>;
   }
   if (!user || profile?.role !== 'Provider') {
     return <div className="p-8 text-center text-red-500"><h1>Access Denied</h1></div>;
   }
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-gray-800 dark:text-white">
-        Open Medicine Requests
-      </h1>
-      
-      {isLoading ? (
-        <p className="text-center text-gray-500">Loading requests...</p>
-      ) : error ? (
-        <p className="text-center text-red-500">{error}</p>
-      ) : requests.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">No Open Requests</h2>
-          <p className="text-gray-500 mt-2">Check back later to see new requests from pharmacies.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {requests.map((req) => {
-            const remainingQuantity = req.quantity - req.quantity_fulfilled;
-            if (remainingQuantity <= 0) return null;
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen p-4 sm:p-8">
+        <div className="max-w-7xl mx-auto">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-gray-800 dark:text-white">
+                Open Medicine Requests
+            </h1>
+            
+            {isLoading ? (
+                <p className="text-center text-gray-500 dark:text-gray-400">Loading requests...</p>
+            ) : error ? (
+                <p className="text-center text-red-500 bg-red-100 dark:bg-red-900/30 p-4 rounded-lg">{error}</p>
+            ) : requests.length === 0 ? (
+                <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-md">
+                    <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">No Open Requests</h2>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2">Check back later to see new requests from pharmacies.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {requests.map((req) => {
+                        const remainingQuantity = req.quantity - req.quantity_fulfilled;
+                        if (remainingQuantity <= 0) return null;
 
-            return (
-              <div key={req.request_id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">{req.medicine_name}</h2>
-                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
-                      Need: {remainingQuantity}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center mb-4">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {/* [FIXED] Access the first element of the profiles array */}
-                      By: <span className="font-semibold">{req.profiles?.[0]?.pharmacy_name || 'A Pharmacy'}</span>
-                    </p>
-                    <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
-                      <StarIcon className="w-4 h-4 text-yellow-400" />
-                      <span className="font-bold text-gray-700 dark:text-gray-200">
-                        {/* [FIXED] Access the first element of the profiles array */}
-                        {req.profiles?.[0]?.average_rating?.toFixed(1) || 'New'}
-                      </span>
-                    </div>
-                  </div>
-                  {req.notes && (
-                    <p className="text-sm bg-gray-50 dark:bg-gray-700 p-3 rounded-md border border-gray-200 dark:border-gray-600">
-                      {req.notes}
-                    </p>
-                  )}
+                        return (
+                            <div key={req.request_id} className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
+                                <div>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h2 className="text-xl font-bold text-gray-800 dark:text-white">{req.medicine_name}</h2>
+                                        <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-1 rounded-full dark:bg-blue-900/50 dark:text-blue-300 whitespace-nowrap">
+                                            Need: {remainingQuantity}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            {/* [FIXED] Access the first element of the profiles array */}
+                                            By: <span className="font-semibold text-gray-700 dark:text-gray-300">{req.profiles?.[0]?.pharmacy_name || 'A Pharmacy'}</span>
+                                        </p>
+                                        <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                                            <StarIcon className="w-4 h-4 text-yellow-400" />
+                                            <span className="font-bold text-gray-700 dark:text-gray-200">
+                                                {/* [FIXED] Access the first element of the profiles array */}
+                                                {req.profiles?.[0]?.average_rating?.toFixed(1) || 'New'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {req.notes && (
+                                        <p className="text-sm bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300">
+                                            {req.notes}
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="mt-6">
+                                    <button 
+                                        onClick={() => router.push(`/dashboard/requests/${req.request_id}`)}
+                                        className="w-full p-2 font-semibold text-white bg-[#08d9b3] rounded-lg hover:bg-[#07c0a0] transition-colors duration-300"
+                                    >
+                                        Make a Deal
+                                    </button>
+                                </div>
+                            </div>
+                        )
+                    })}
                 </div>
-                <div className="mt-6">
-                  <button 
-                    onClick={() => router.push(`/dashboard/requests/${req.request_id}`)}
-                    className="w-full p-2 font-semibold text-white bg-cyan-600 rounded-lg hover:bg-cyan-700 transition-colors duration-300"
-                  >
-                    Make a Deal
-                  </button>
-                </div>
-              </div>
-            )
-          })}
+            )}
         </div>
-      )}
     </div>
   );
 }
-

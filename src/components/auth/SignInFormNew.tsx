@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-// Make sure you have this utility file from our previous steps.
+// Make sure you have this utility file.
 import { supabase } from '@/utils/supabase/client';
 
-// --- SVG Icons (recreated from the original component) ---
+// --- SVG Icons ---
 const ChevronLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="15 18 9 12 15 6"></polyline>
@@ -28,44 +28,80 @@ const EyeCloseIcon = ({ className }: { className?: string }) => (
 );
 
 
-// --- MAIN LOGIN COMPONENT ---
+// --- MAIN LOGIN COMPONENT (Updated) ---
 export default function SignInForm() {
   const router = useRouter();
 
-  // --- STATE MANAGEMENT ---
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   
-  // UI feedback states
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  // --- FORM SUBMISSION HANDLER ---
+  // --- Updated Form Submission Handler ---
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    // Step 1: Attempt to sign in the user.
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      if (authError) {
-        throw authError;
+    if (authError) {
+      setError(authError.message);
+      setLoading(false);
+      return;
+    }
+
+    if (authData.user) {
+      // Step 2: After successful authentication, fetch the user's profile to check their status.
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('status')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (profileError || !profile) {
+        setError("Could not verify your account status. Please try again.");
+        await supabase.auth.signOut(); // Sign out to prevent a partial login state.
+        setLoading(false);
+        return;
       }
 
-			console.log('Login successful, data:', data);
-			localStorage.setItem('user', JSON.stringify(data.session));
-			router.push('/dashboard');
-
-				} catch (err) {
-			console.error('Error logging in:', err);
-			setError((err as { message?: string })?.message || 'Invalid email or password.');
-				} finally {
-			setLoading(false);
+      // Step 3: Check the user's status and handle each case.
+      switch (profile.status) {
+        case 'active':
+          // If active, proceed to the dashboard.
+          router.push('/dashboard');
+          break;
+        case 'banned':
+          setError("Your account has been banned. You are not permitted to log in.");
+          await supabase.auth.signOut();
+          setLoading(false);
+          break;
+        case 'inactive':
+          setError("Your account is currently inactive. Please contact the support team for assistance.");
+          await supabase.auth.signOut();
+          setLoading(false);
+          break;
+        case 'under_review':
+            setError("Your account is still under review. Please wait for admin approval before logging in.");
+            await supabase.auth.signOut();
+            setLoading(false);
+            break;
+        default:
+          setError("An unknown account status was found. Please contact support.");
+          await supabase.auth.signOut();
+          setLoading(false);
+          break;
+      }
+    } else {
+        setError("An unexpected error occurred during login.");
+        setLoading(false);
     }
   };
 
@@ -103,7 +139,7 @@ export default function SignInForm() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full p-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                    className="w-full p-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#08d9b3] focus:border-[#08d9b3] transition"
                   />
                 </div>
                 <div>
@@ -117,7 +153,7 @@ export default function SignInForm() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="w-full p-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition"
+                      className="w-full p-3 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#08d9b3] focus:border-[#08d9b3] transition"
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -134,7 +170,7 @@ export default function SignInForm() {
                 <div className="flex items-center justify-end">
                   <Link
                     href="/forgot-password"
-                    className="text-sm text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-500"
+                    className="text-sm text-[#08d9b3] hover:text-[#07c0a0]"
                   >
                     Forgot password?
                   </Link>
@@ -143,7 +179,7 @@ export default function SignInForm() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full p-3 font-semibold text-white bg-cyan-600 rounded-lg hover:bg-cyan-700 disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors duration-300"
+                    className="w-full p-3 font-semibold text-white bg-[#08d9b3] rounded-lg hover:bg-[#07c0a0] disabled:bg-gray-500 disabled:cursor-not-allowed transition-colors duration-300"
                   >
                     {loading ? 'Signing In...' : 'Sign in'}
                   </button>
@@ -158,7 +194,7 @@ export default function SignInForm() {
                 Don&apos;t have an account?{" "}
                 <Link
                   href="/#register"
-                  className="font-medium text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-500"
+                  className="font-medium text-[#08d9b3] hover:text-[#07c0a0]"
                 >
                   Sign Up
                 </Link>
