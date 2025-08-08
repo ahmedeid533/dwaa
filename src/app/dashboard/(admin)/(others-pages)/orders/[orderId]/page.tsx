@@ -74,7 +74,6 @@ export default function OrderDetailsPage() {
   const fetchOrderDetails = useCallback(async () => {
     if (!user || !orderId) return;
 
-    // The raw data from Supabase might have `reviews` as an object or null
     const { data: rawData, error: fetchError } = await supabase
       .from('orders')
       .select(`
@@ -99,16 +98,17 @@ export default function OrderDetailsPage() {
       setError('Could not find this order or you do not have permission to view it.');
       console.error('Fetch Error:', fetchError?.message);
     } else {
-      // [FIXED] This block normalizes the data structure.
-      // Because 'reviews' is a one-to-one relationship, Supabase returns it as a single object.
-      // We check if `rawData.reviews` exists and is not an array, and if so, wrap it in an array
-      // to match the `OrderDetails` type. This ensures the rest of the component logic works correctly.
+      // [FIXED] This block normalizes the entire data structure to match `OrderDetails`.
+      // Supabase returns to-one relationships as single objects and to-many as arrays.
+      // This ensures that `reviews`, `medicine_requests`, and `provider` all match the type definition.
       const normalizedData = {
         ...rawData,
         reviews: rawData.reviews && !Array.isArray(rawData.reviews) ? [rawData.reviews] : (rawData.reviews || []),
+        medicine_requests: Array.isArray(rawData.medicine_requests) ? rawData.medicine_requests[0] : rawData.medicine_requests,
+        provider: Array.isArray(rawData.provider) ? rawData.provider[0] : rawData.provider,
       };
       
-      setOrder(normalizedData as OrderDetails);
+      setOrder(normalizedData as unknown as OrderDetails);
       setError(null);
     }
   }, [user, orderId]);
@@ -129,7 +129,6 @@ export default function OrderDetailsPage() {
     if (updateError) {
         setError(`Error updating status: ${updateError.message}`);
     } else {
-        // Optimistically update the status in the UI
         setOrder({ ...order, order_status: newStatus });
     }
   };
@@ -162,8 +161,6 @@ export default function OrderDetailsPage() {
           comment: comment
       }]);
     
-    // On success or if a duplicate error occurs (e.g., from a double-click),
-    // re-fetch the order details to ensure the UI shows the latest state.
     if (reviewError) {
       if (reviewError.message.includes('duplicate key value')) {
         await fetchOrderDetails();
@@ -180,7 +177,6 @@ export default function OrderDetailsPage() {
   if (error) return <div className="p-8 text-center text-red-500"><h1>Error</h1><p>{error}</p></div>;
   if (!order) return <div className="p-8 text-center text-gray-500 dark:text-gray-400">Order not found.</div>
 
-  // This logic now works correctly because `order.reviews` is guaranteed to be an array.
   const orderItem = order.order_items?.[0];
   const deal = orderItem?.deals;
   const providerName = order.provider?.provider_name;
@@ -249,7 +245,6 @@ export default function OrderDetailsPage() {
                             </div>
                         )}
 
-                        {/* This conditional rendering now works correctly */}
                         {order.order_status === 'Delivered' && !existingReview && (
                             <form onSubmit={handleReviewSubmit}>
                                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Thank you for your order! Please rate your experience with the provider.</p>
@@ -269,7 +264,6 @@ export default function OrderDetailsPage() {
                             </form>
                         )}
 
-                        {/* This block will now display correctly when a review exists */}
                         {existingReview && (
                             <div>
                                 <h3 className="text-base font-semibold text-gray-700 dark:text-gray-200">Your Review</h3>

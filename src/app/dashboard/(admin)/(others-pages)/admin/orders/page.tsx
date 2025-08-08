@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from "react";
-// Make sure the path to your AuthContext and Supabase client is correct
 import { useAuth } from "@/context/AuthContext"; 
 import { supabase } from "@/utils/supabase/client";
 
-// --- Type Definitions (Updated) ---
+// --- Type Definitions ---
 type OrderStatus = 'Pending' | 'Shipped' | 'Delivered' | 'Completed' | 'Cancelled';
 
 const ALL_ORDER_STATUSES: OrderStatus[] = ['Pending', 'Shipped', 'Delivered', 'Completed', 'Cancelled'];
@@ -22,6 +21,14 @@ interface Order {
         provider_name: string;
     } | null;
 }
+
+// [FIXED] Added a type for the raw data from Supabase to avoid using 'any'.
+// This type accounts for the fact that related profiles can be objects or arrays.
+type RawOrderFromSupabase = Omit<Order, 'pharmacy_profile' | 'provider_profile'> & {
+    pharmacy_profile: { pharmacy_name: string } | { pharmacy_name: string }[] | null;
+    provider_profile: { provider_name: string } | { provider_name: string }[] | null;
+};
+
 
 // --- Main Admin Orders Component ---
 export default function AdminAllOrdersPage() {
@@ -55,7 +62,8 @@ export default function AdminAllOrdersPage() {
                     console.error("Error fetching all orders:", fetchError);
                     setError("Could not fetch order data.");
                 } else if (data) {
-                    const transformedOrders: Order[] = (data as any[]).map((order) => ({
+                    // [FIXED] Use the specific 'RawOrderFromSupabase' type instead of 'any[]'.
+                    const transformedOrders: Order[] = (data as RawOrderFromSupabase[]).map((order) => ({
                         ...order,
                         pharmacy_profile: Array.isArray(order.pharmacy_profile) ? order.pharmacy_profile[0] ?? null : order.pharmacy_profile ?? null,
                         provider_profile: Array.isArray(order.provider_profile) ? order.provider_profile[0] ?? null : order.provider_profile ?? null,
@@ -86,7 +94,6 @@ export default function AdminAllOrdersPage() {
             console.error("Error updating order status:", updateError);
             setError("Failed to update order status. Please try again.");
         } else if (data) {
-            // Update the order in the local state to reflect the change immediately
             setOrders(currentOrders =>
                 currentOrders.map(order =>
                     order.order_id === orderId ? { ...order, order_status: data.order_status } : order

@@ -1,14 +1,34 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext'; // Assuming you have an AuthContext
 import { supabase } from '@/utils/supabase/client'; // Your Supabase client
 
+// --- Type Definitions ---
+type ProfileStatus = 'under_review' | 'approved' | 'rejected';
+type UserRole = 'Pharmacy' | 'Provider' | 'Admin';
+
+// [FIXED] Defined a specific type for the profile data to avoid using 'any'.
+type Profile = {
+    id: string;
+    role: UserRole;
+    contact_phone: string | null;
+    created_at: string;
+    pharmacy_name: string | null;
+    address: string | null;
+    city: string | null;
+    license_number: string | null;
+    provider_name: string | null;
+    warehouse_address: string | null;
+    average_rating: number;
+    status: ProfileStatus;
+};
+
+
 // --- Helper Components & Icons ---
 
-// A simple icon component for demonstration. Replace with your icon library (e.g., Lucide, Heroicons).
 const Icon = ({ name, className, fill = "none" }: { name: string, className?: string, fill?: string }) => {
-    const icons: { [key: string]: JSX.Element } = {
+    const icons: { [key: string]: React.JSX.Element } = {
         user: <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />,
         phone: <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 6.75z" />,
         mapPin: (
@@ -23,21 +43,18 @@ const Icon = ({ name, className, fill = "none" }: { name: string, className?: st
     return <svg xmlns="http://www.w3.org/2000/svg" fill={fill} viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className || "w-6 h-6"}>{icons[name]}</svg>;
 };
 
-// Star rating display component
 const StarRatingDisplay = ({ rating }: { rating: number }) => {
     const totalStars = 5;
     return (
         <div className="flex items-center">
             {[...Array(totalStars)].map((_, index) => (
-                // [FIXED] Pass fill="currentColor" to ensure the star shape is filled, not just outlined.
                 <Icon key={index} name="star" fill="currentColor" className={`w-5 h-5 ${index < Math.round(rating) ? 'text-yellow-400' : 'text-gray-300'}`} />
             ))}
         </div>
     );
 };
 
-// Profile status badge component
-const StatusBadge = ({ status }: { status: string }) => {
+const StatusBadge = ({ status }: { status: ProfileStatus }) => {
     const statusStyles: { [key: string]: string } = {
         under_review: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
         approved: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
@@ -55,8 +72,9 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 export default function ProfilePage() {
     const { user } = useAuth();
-    const [profile, setProfile] = useState<any>(null);
-    const [formData, setFormData] = useState<any>({});
+    // [FIXED] Used the specific 'Profile' type for state.
+    const [profile, setProfile] = useState<Profile | null>(null);
+    const [formData, setFormData] = useState<Partial<Profile>>({});
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -74,9 +92,9 @@ export default function ProfilePage() {
         if (error) {
             setError('Failed to fetch profile data.');
             console.error(error);
-        } else {
+        } else if (data) {
             setProfile(data);
-            setFormData(data); // Initialize form data
+            setFormData(data);
         }
         setIsLoading(false);
     }, [user]);
@@ -95,7 +113,17 @@ export default function ProfilePage() {
         setIsSaving(true);
         setError(null);
 
-        const { id, role, average_rating, status, created_at, ...updateData } = formData;
+        // [FIXED] Explicitly create the update object to avoid unused variable errors.
+        // This object only contains the fields that should be editable by the user.
+        const updateData = {
+            contact_phone: formData.contact_phone,
+            pharmacy_name: formData.pharmacy_name,
+            address: formData.address,
+            city: formData.city,
+            license_number: formData.license_number,
+            provider_name: formData.provider_name,
+            warehouse_address: formData.warehouse_address,
+        };
 
         const { error: updateError } = await supabase
             .from('profiles')
@@ -106,14 +134,16 @@ export default function ProfilePage() {
             setError('Failed to update profile. Please try again.');
             console.error(updateError);
         } else {
-            await fetchProfile(); // Re-fetch to get the latest data
+            await fetchProfile();
             setIsEditing(false);
         }
         setIsSaving(false);
     };
 
     const handleCancel = () => {
-        setFormData(profile); // Reset form data to original profile
+        if (profile) {
+            setFormData(profile);
+        }
         setIsEditing(false);
     };
 
@@ -129,7 +159,7 @@ export default function ProfilePage() {
         return <div className="p-8 text-center text-gray-500 dark:text-gray-400">Profile not found.</div>;
     }
 
-    const renderField = (name: string, label: string, icon: string) => (
+    const renderField = (name: keyof Profile, label: string, icon: string) => (
         <div>
             <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">{label}</label>
             {isEditing ? (
@@ -196,7 +226,6 @@ export default function ProfilePage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {renderField('contact_phone', 'Contact Phone', 'phone')}
                             
-                            {/* Conditional fields based on role */}
                             {profile.role === 'Pharmacy' ? (
                                 <>
                                     {renderField('address', 'Pharmacy Address', 'mapPin')}

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/utils/supabase/client';
 
-// Define the new type for a Sale, based on the `orders` table
+// Define the type for a Sale, based on the `orders` table
 type Sale = {
   order_id: number;
   order_date: string;
@@ -30,7 +30,6 @@ export default function MySalesPage() {
     if (user && profile?.role === 'Provider') {
       const fetchMySales = async () => {
         setIsLoading(true);
-        // The query now starts from 'orders' and filters by the provider's user ID.
         const { data, error: fetchError } = await supabase
           .from('orders')
           .select(`
@@ -52,9 +51,26 @@ export default function MySalesPage() {
         if (fetchError) {
           setError('Could not fetch your sales.');
           console.error(fetchError);
-        } else {
-          // The fetched data now directly matches the `Sale[]` type.
-          setSales(data as Sale[]);
+        } else if (data) {
+          // [FIXED] This block transforms the raw data from Supabase to match the 'Sale' type.
+					// It correctly handles nested relationships that are returned as arrays.
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const transformedSales = data.map((sale: any) => {
+            const medicineRequest = Array.isArray(sale.medicine_requests) ? sale.medicine_requests[0] : sale.medicine_requests;
+            
+            const pharmacyProfile = medicineRequest && Array.isArray(medicineRequest.profiles) 
+              ? medicineRequest.profiles[0] 
+              : (medicineRequest ? medicineRequest.profiles : null);
+
+            return {
+              ...sale,
+              medicine_requests: medicineRequest ? {
+                ...medicineRequest,
+                profiles: pharmacyProfile || null,
+              } : null,
+            };
+          });
+          setSales(transformedSales as Sale[]);
         }
         setIsLoading(false);
       };
@@ -74,7 +90,7 @@ export default function MySalesPage() {
       // Update the local state to reflect the change immediately.
       setSales(currentSales =>
         currentSales.map(sale =>
-          sale.order_id === orderId ? { ...sale, order_status: newStatus } : sale
+          sale.order_id === orderId ? { ...sale, order_status: newStatus as Sale['order_status'] } : sale
         )
       );
     }
@@ -134,7 +150,6 @@ export default function MySalesPage() {
                                         >
                                             <option value="Pending">Pending</option>
                                             <option value="Shipped">Shipped</option>
-                                            {/* <option value="Delivered">Delivered</option> */}
                                             <option value="Cancelled">Cancelled</option>
                                         </select>
                                     </div>

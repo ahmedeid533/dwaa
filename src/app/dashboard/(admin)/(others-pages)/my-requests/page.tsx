@@ -77,7 +77,7 @@ export default function MyRequestsPage() {
             ) : requests.length === 0 ? (
                 <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-md">
                     <h2 className="text-xl font-semibold text-gray-800 dark:text-white">No Open Requests Found</h2>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2">You don't have any open or processing medicine requests.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2">You don&apos;t have any open or processing medicine requests.</p>
                     <button onClick={() => router.push('/dashboard/request-medicine')} className="mt-6 bg-[#08d9b3] text-white font-semibold py-2 px-5 rounded-lg hover:bg-[#07c0a0] transition-colors duration-300 shadow-sm">
                         Make a New Request
                     </button>
