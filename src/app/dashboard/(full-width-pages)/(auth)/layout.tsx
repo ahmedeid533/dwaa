@@ -12,13 +12,14 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
-			<ThemeProvider>
+		<ThemeProvider>
+    <div className="relative  bg-white z-1 dark:bg-gray-900 sm:p-0">
+			
 				{/* dark: */}
         <div className="relative flex lg:flex-row w-full h-screen justify-center flex-col  bg-gray-900 sm:p-0">
 					{children}
 					{/* bg-brand-950 dark: */}
-          <div className="lg:w-1/2 w-full h-full bg-white/5 lg:grid items-center hidden">
+          <div className="md:w-1/2 h-full bg-white/5 lg:grid items-center hidden">
             <div className="relative items-center justify-center  flex z-1">
               {/* <!-- ===== Common Grid Shape Start ===== --> */}
               <GridShape />
@@ -40,8 +41,9 @@ export default function AuthLayout({
           <div className="fixed bottom-6 right-6 z-50 hidden sm:block">
             <ThemeTogglerTwo />
           </div>
-        </div>
-      </ThemeProvider>
+				</div>
     </div>
+				
+      </ThemeProvider>
   );
 }
