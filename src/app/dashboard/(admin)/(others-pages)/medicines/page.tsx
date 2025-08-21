@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/utils/supabase/client";
 
@@ -135,7 +136,8 @@ export default function MedicineManagementPage() {
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-x-auto">
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 dark:bg-gray-700/30">
-                                <tr>
+									<tr>
+										<th className="p-4 font-semibold text-sm text-gray-600 dark:text-gray-300">Image</th>
                                     <th className="p-4 font-semibold text-sm text-gray-600 dark:text-gray-300">Commercial Name</th>
                                     <th className="p-4 font-semibold text-sm text-gray-600 dark:text-gray-300">Scientific Name</th>
                                     <th className="p-4 font-semibold text-sm text-gray-600 dark:text-gray-300">Manufacturer</th>
@@ -144,7 +146,10 @@ export default function MedicineManagementPage() {
                             </thead>
                             <tbody>
                                 {medicines.map(med => (
-                                    <tr key={med.medicine_id} className="border-b dark:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+																	<tr key={med.medicine_id} className="border-b dark:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors">
+																				<td className="p-4">
+																					<Image src={med.medicine_image || '/images/default-medicine.png'} alt={med.commercial_name || 'Medicine Image'} width={50} height={50} className="rounded-md" />
+																				</td>
                                         <td className="p-4 font-medium text-gray-800 dark:text-gray-200">{med.commercial_name}</td>
                                         <td className="p-4 text-gray-600 dark:text-gray-400">{med.scientific_name}</td>
                                         <td className="p-4 text-gray-600 dark:text-gray-400">{med.manufacturer}</td>

@@ -117,6 +117,8 @@ import { Menu, X, Globe } from "lucide-react"
 import { Button } from "../components/ui/button"
 import { useLanguage } from '@/context/LanguageContext'
 import { translations } from '@/translations/translations'
+import Link from "next/link"
+import Image from "next/image"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -137,9 +139,19 @@ export default function Header() {
         <div className={`flex items-center justify-between h-16 ${isRTL ? 'flex-row-reverse' : ''}`}>
           
           {/* Logo */}
-          <h1 className="text-2xl font-bold gradient-text">
-            {t.logo}
-          </h1>
+					{/* <h1 style={{
+						display: "block"
+					}} className="text-2xl font-bold gradient-text">
+            {t.logo ||"dwaaLink"} 
+          </h1> */}
+					 <Link href="/" className="block w-24">
+														<Image
+															width={231}
+															height={48}
+															src="/images/logo/logo.svg"
+															alt="Logo"
+														/>
+													</Link>
 
           {/* Desktop Navigation */}
           <nav className={`hidden md:flex items-center ${isRTL ? 'space-x-reverse space-x-8' : 'space-x-8'}`}>
@@ -155,7 +167,7 @@ export default function Header() {
           </nav>
 
           {/* Desktop Actions */}
-          <div className={`hidden md:flex items-center ${isRTL ? 'space-x-reverse space-x-4' : 'space-x-4'}`}>
+          <div className={`hidden md:flex items-center ${isRTL ? 'flex-row-reverse space-x-reverse space-x-4' : 'space-x-4'}`}>
             <Button 
               variant="ghost" 
               size="sm" 
