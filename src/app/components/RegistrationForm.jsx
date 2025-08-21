@@ -1129,11 +1129,11 @@ export default function RegistrationSection() {
               }`}
             >
               {t.termsText}{' '}
-              <a href="#features" className="text-primary-600 hover:underline">
+              <a href="privacy" className="text-primary-600 hover:underline">
                 {t.termsOfService}
               </a>{' '}
               {t.and}{' '}
-              <a href="#features" className="text-primary-600 hover:underline">
+              <a href="privacy" className="text-primary-600 hover:underline">
                 {t.privacyPolicy}
               </a>
 						</p>

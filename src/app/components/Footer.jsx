@@ -229,19 +229,19 @@ export default function Footer() {
             </p>
             <div className={`flex mt-4 md:mt-0 ${isRTL ? 'space-x-reverse space-x-6' : 'space-x-6'}`}>
               <a 
-                href="#features" 
+                href="privacy" 
                 className="text-gray-400 hover:text-primary-500 footer-link transition-colors"
               >
                 {t.legal.privacyPolicy}
               </a>
               <a 
-                href="#features" 
+                href="privacy" 
                 className="text-gray-400 hover:text-primary-500 footer-link transition-colors"
               >
                 {t.legal.termsOfService}
               </a>
               <a 
-                href="#features" 
+                href="privacy" 
                 className="text-gray-400 hover:text-primary-500 footer-link transition-colors"
               >
                 {t.legal.cookiePolicy}

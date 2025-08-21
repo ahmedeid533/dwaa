@@ -125,10 +125,10 @@ export default function Header() {
   const isRTL = language === 'ar'
 
   const navigationLinks = [
-    { name: language === 'ar' ? 'الرئيسية' : 'Home', href: "#home" },
-    { name: t.about, href: "#about" },
-    { name: language === 'ar' ? 'المميزات' : 'Features', href: "#features" },
-    { name: language === 'ar' ? 'اتصل بنا' : 'Contact', href: "#contact" }
+    { name: language === 'ar' ? 'الرئيسية' : 'Home', href: "/#home" },
+    { name: t.about, href: "/#about" },
+    { name: language === 'ar' ? 'المميزات' : 'Features', href: "/privacy" },
+    { name: language === 'ar' ? 'اتصل بنا' : 'Contact', href: "/privacy#contact" }
   ]
 
   return (

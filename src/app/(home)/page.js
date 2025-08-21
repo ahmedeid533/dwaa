@@ -3,7 +3,7 @@ import Layout from '../components/Layout';
 import HeroSection from '../components/HeroSection';
 import AboutSection from '../components/AboutSection';
 import RegistrationForm from '../components/RegistrationForm';
-import PrivacyPolicy from '../components/PrivacyPolicy';
+// import PrivacyPolicy from '../components/PrivacyPolicy';
 
 export default function Home() {
   return (
@@ -11,7 +11,7 @@ export default function Home() {
       <HeroSection />
       <AboutSection />
       <RegistrationForm />
-      <PrivacyPolicy />
+      {/* <PrivacyPolicy /> */}
     </Layout>
   );
 }
